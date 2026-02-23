@@ -6,7 +6,7 @@ class SolidQueue::InstallGenerator < Rails::Generators::Base
   def copy_files
     template "config/queue.yml"
     template "config/recurring.yml"
-    template "db/queue_schema.rb"
+    template "db/queue_#{db_format}"
     template "bin/jobs"
     chmod "bin/jobs", 0755 & ~File.umask, verbose: false
   end
@@ -18,5 +18,11 @@ class SolidQueue::InstallGenerator < Rails::Generators::Base
     gsub_file pathname, /(# )?config\.active_job\.queue_adapter\s+=.*\n/,
       "config.active_job.queue_adapter = :solid_queue\n" +
       "  config.solid_queue.connects_to = { database: { writing: :queue } }\n"
+  end
+
+  private
+
+  def db_format
+    Rails.application.config.active_record.schema_format == :sql ? "structure.sql" : "schema.rb"
   end
 end
